@@ -1,8 +1,3 @@
-"""
-Tie-line levelling. Survey 2 is flown along parallel lines and survey 3 (the tie-line) crosses
-them. Every track is detrended, the tie-line is matched to the survey where they cross, and the
-tie-line - survey residuals are interpolated over the survey and removed.
-"""
 import sys
 
 import numpy as np
@@ -133,25 +128,18 @@ def residual_fits(survey: pd.DataFrame, laplace_sensors=(1, 2, 3, 4)) -> dict[in
     return results
 
 
-# Gridding
-# -------------------------
 def _nn_grid(lat, lon, values, cell_size) -> pd.DataFrame:
-    """Natural neighbour interpolation with PyMEL. Returns a DataFrame with lat, lon, val."""
     if str(PYMEL_DIR) not in sys.path:
         sys.path.append(str(PYMEL_DIR))
     from PyMEL.raster import blank, nearest_neighbor as nn
 
     result = nn.nn_interpolate(lat, lon, values, blank.create_2d(lat, lon, cell_size=cell_size), df_out=True)
-    if result is None:
-        raise RuntimeError("nnbathy failed (see the message above). On macOS it has to be on the PATH: "
-                           "https://github.com/sakov/nn-c")
+
     return result[1]
 
 
 def mask_polygon(grid: pd.DataFrame, polygon: Polygon | None) -> pd.DataFrame:
     """Grid cells inside the polygon (all cells if polygon is None)."""
-    if polygon is None:
-        return grid
     return grid[vectorized.contains(polygon, grid["lon"].values, grid["lat"].values)].copy()
 
 
@@ -215,8 +203,6 @@ def anomaly_grid(survey: pd.DataFrame, polygon=ANOMALY_POLYGON, column="detrende
     """
     lat, lon = survey["Latitude [m]"].values, survey["Longitude [m]"].values
     inside = vectorized.contains(polygon.buffer(buffer), lon, lat)
-    if not inside.any():
-        raise ValueError("No samples inside the buffered polygon. Check the coordinates or the buffer.")
 
     grid = _nn_grid(lat[inside], lon[inside], survey[column].values[inside], cell_size)
     grid = mask_polygon(grid, polygon)

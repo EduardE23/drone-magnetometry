@@ -1,8 +1,3 @@
-"""
-Signal processing building blocks for the magnetometer data: Butterworth filters, FIR band
-envelopes for the constant frequency (harmonic) analysis, the synchrosqueezed STFT, distribution
-fits and SNR. Nothing in here plots; the plots are made in the notebooks.
-"""
 import numpy as np
 import pandas as pd
 from scipy.signal import butter, filtfilt, firwin, freqz, hilbert, kaiserord
@@ -14,7 +9,6 @@ SENSORS = range(1, 6)
 
 
 def select_sensor(survey: pd.DataFrame, sensor: int, on_track: bool = False) -> pd.DataFrame:
-    """Rows of one sensor, optionally only the samples labelled on_track."""
     mask = survey["Sensor ID"] == sensor
     if on_track:
         mask &= survey["Track_status"] == "on_track"
@@ -86,9 +80,6 @@ def frequency_response(taps: np.ndarray, fs: float, n: int = 8000) -> tuple[np.n
     return freqz(taps, worN=n, fs=fs)
 
 
-# -------------------------
-# Time-frequency
-# -------------------------
 def calculate_ssq_stft(signal, n_fft: int, fs: float = FS):
     """
     Synchrosqueezed short time Fourier transform.
@@ -112,26 +103,19 @@ def calculate_ssq_stft(signal, n_fft: int, fs: float = FS):
     return ssq_stft(signal, fs=fs, n_fft=n_fft, hop_len=1, modulated=True, padtype="zero")
 
 
-# -------------------------
-# Distributions
-# -------------------------
 def normal_fit(signal) -> dict:
-    """Gaussian fit and D'Agostino-Pearson normality test."""
+    """Gaussian fit and normality test."""
     mu, sigma = norm.fit(signal)
     statistic, p_value = normaltest(signal)
     return {"mu": mu, "sigma": sigma, "dist": norm(mu, sigma), "statistic": statistic, "p_value": p_value}
 
 
 def truncated_normal_fit(x) -> dict:
-    """Gaussian fit of x, truncated to the range of x (e.g. for envelopes, which can't be negative)."""
+    """Gaussian fit of x, truncated to the range of x."""
     mu, sigma = norm.fit(x)
     a, b = (np.min(x) - mu) / sigma, (np.max(x) - mu) / sigma
     return {"mu": mu, "sigma": sigma, "dist": truncnorm(a, b, loc=mu, scale=sigma)}
 
-
-# -------------------------
-# SNR
-# -------------------------
 def compute_snr_per_sensor(anomaly_df: pd.DataFrame,
                            components=("Mag-X [nT]", "Mag-Y [nT]", "Mag-Z [nT]", "Total field [nT]"),
                            signal_window_size: int = 700, total_window_size: int = 2000,
@@ -141,11 +125,6 @@ def compute_snr_per_sensor(anomaly_df: pd.DataFrame,
 
     The signal is the peak-to-peak value of the central signal_window_size samples, the noise the
     standard deviation of the samples before and after it.
-
-    Notes:
-    ------------
-    The windows are selected with .loc, which includes the end label, so the signal window shares
-    its first and last sample with the noise windows.
     """
     if filtered:
         components = [c.replace("[nT]", "[nT]_2Hz") for c in components]

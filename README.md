@@ -1,18 +1,18 @@
 # Optimization of high-resolution drone-based geophysical prospection
 
-Code of my MSc thesis in Bioscience Engineering (Ghent University, 2024-2025).
+Code of my thesis.
 Supervisors: Prof. dr. Philippe De Smedt, Prof. dr. ir. Wouter Maes. Counsellors: dr. Jeroen Verhegge, dr. Leon Kaub.
 
-Drones make magnetometry surveys faster and cheaper than walking them, but the drone itself is a noise source:
-its motors, propellers and electronics all leave a trace in the magnetometer data and can hide small or weak
-anomalies. This project characterizes that noise, models it, and builds the processing to get clean anomaly
-maps out of drone-based fluxgate data.
+Drones make magnetometry surveys faster and cheaper than walking them, but the drone makes a lot of noise from
+its motors, propellers and electronics which leave traces in the magnetometer data. The reason we wanted to 
+identify and eliminate the noise is because it can hide small or weak anomalies. This project characterizes that noise,
+attempted to model it, and builds the processing to get clean anomaly maps out of drone-based fluxgate data.
 
-**Main finding:** the noise is not random but structured. It consists of distinct frequency bands linked to the
+**Results** the noise is not random but structured. It consists of distinct frequency bands linked to the
 electronics (a 16.7 Hz harmonic family and 20 Hz), the propellers (four motor ridges between 40 and 60 Hz that
-shift with flight velocity) and vibrations (18 Hz and its harmonics). Because it is structured, it can be
-filtered and modelled: a 2 Hz lowpass alone raises the SNR of the buried test objects up to about 4 times
-(e.g. from 21 to 75 on sensor 2), and adjusting the flight (flying lower or slower) makes the detection more reliable.
+shift with flight velocity) and vibrations (18 Hz and its harmonics). We filtered and tried to model it:
+ a 2 Hz lowpass alone raises the SNR of the buried test objects up to about 4 times
+(e.g. from 21 to 75 on sensor 2), and adjusting the flight (flying lower and/or slower) makes the detection more reliable.
 
 ## Setup
 
@@ -99,14 +99,13 @@ of the drone noise while keeping the anomaly, which raises the SNR (peak-to-peak
 | Survey 3 (variable heading), 2 Hz lowpass | 4.5 | 14.8 | 27.8 | 69.7 | 76.9 |
 
 Flying 30 cm lower increases the SNR on four of the five sensors, and the flight heading changes which sensors
-see the anomaly best. A sym7
-wavelet, which has the shape of a dipole, works as a matched filter to flag anomalies automatically.
+see the anomaly best. A sym7 wavelet, which has the shape of a dipole, works as a matched filter to flag anomalies automatically.
 
 ### Levelling
 
 Every track has its own linear drift (±0.008-0.012 nT per sample). Removing it per track, and levelling
 survey 2 against the crossing tie-line flight (survey 4), gives a consistent map where the spheres stand out.
-The thesis grids it with natural neighbour interpolation (NNbathy); the figure below shows the samples as they are.
+The thesis grids it with natural neighbour bathymetry; the figure below shows the samples as they are.
 
 ![Detrended field](figures/detrended_field.png)
 
@@ -130,14 +129,14 @@ notebooks/
 figures/                      README figures
 ```
 
-All processing lives in `src/`; the notebooks only plot. Minimal use:
+All data loading lives in `src/`;
 
 ```python
 import sys
 sys.path.insert(0, "src")
 from dataloader import load_survey
 
-survey = load_survey(1, survey_speed=1.25)   # survey 2
+survey = load_survey(1, survey_speed=1.5)   # survey 2
 # one row per sensor sample: GPS time, Sensor ID, position [m], attitude, velocity,
 # Mag-X/Y/Z and total field [nT], Track_status and Track_number
 ```
@@ -146,6 +145,3 @@ survey = load_survey(1, survey_speed=1.25)   # survey 2
 
 Python 3.10 with numpy, scipy, pandas, matplotlib, seaborn, pyproj, statsmodels, ssqueezepy, PyWavelets,
 shapely and jupyter.
-
-The raw survey data (`Proefveld raw_csv/`) is not included. The gridding in `tieline.py` uses PyMEL, a Ghent
-University library that is not included either, and its `nnbathy` binary; everything else runs without it.

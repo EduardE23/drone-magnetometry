@@ -412,9 +412,6 @@ class SurveyDataLoader:
         all_sensor_coordinates = pd.concat(corrected_sensors, ignore_index=True)
         return all_sensor_coordinates
 
-    # -------------------------
-    # Track labelling
-    # -------------------------
 
     def label_off_track_points(self, centered_data: pd.DataFrame) -> pd.DataFrame:
         """

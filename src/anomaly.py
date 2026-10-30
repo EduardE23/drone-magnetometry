@@ -21,10 +21,6 @@ def match_nearest_samples(survey: pd.DataFrame, objects: pd.DataFrame) -> tuple[
     """
     Find the survey sample closest to each object.
 
-    Returns:
-    ------------
-    objects: input with the columns Nearest_Point_Index and Distance_to_Nearest_Point added
-    nearest_points: the matching survey rows, in the same order as objects
     """
     tree = KDTree(survey[["Longitude [m]", "Latitude [m]"]].values)
     distances, indices = tree.query(objects[["Longitude [m]", "Latitude [m]"]].values)
@@ -41,12 +37,6 @@ def extract_dipole_windows(survey: pd.DataFrame, nearest_points: pd.DataFrame, w
     """
     Extract ±window_size samples around the first anomaly for every sensor.
 
-    Notes:
-    ------------
-    The window is centred on the first object in nearest_points. The positions of the other
-    objects inside the window are stored in Other_Anomaly_Offsets, Center_Idx is the position
-    of the first one. With filter=True the components are lowpass filtered over the full
-    sensor record (not the window, to avoid edge effects) and stored as '<component>_2Hz'.
     """
     assert len(nearest_points) >= 1, "At least one anomaly must be provided."
 
@@ -106,10 +96,7 @@ def sensor_signal(windows: pd.DataFrame, sensor_id: int, column: str = "Total fi
 # -------------------------
 def snr_table(windows: pd.DataFrame, filtered: bool = False, window_size: int = 1000,
               signal_window_size: int = 700) -> pd.DataFrame:
-    """
-    SNR of the total field per sensor: peak-to-peak in the central signal_window_size samples
-    divided by the standard deviation of the rest of the window.
-    """
+
     snr = compute_snr_per_sensor(windows, filtered=filtered, signal_window_size=signal_window_size,
                                  total_window_size=2 * window_size)
     snr["Component"] = snr["Component"].str.extract(r"(Mag-[XYZ]|Total field)", expand=False)

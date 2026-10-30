@@ -1,8 +1,3 @@
-"""
-Propeller noise in the velocity flights. Surveys 7 to 11 are flown at 1 to 3 m/s; the motor
-harmonics between 37 and 60 Hz are tracked as ridges of the synchrosqueezed STFT and related
-to the flight velocity.
-"""
 from collections import defaultdict
 
 import numpy as np
