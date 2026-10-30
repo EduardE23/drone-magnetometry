@@ -1,7 +1,4 @@
-# Optimization of high-resolution drone-based geophysical prospection
-
-Code of my thesis.
-Supervisors: Prof. dr. Philippe De Smedt, Prof. dr. ir. Wouter Maes. Counsellors: dr. Jeroen Verhegge, dr. Leon Kaub.
+# Thesis: Optimization of high-resolution drone-based geophysical prospection
 
 Drones make magnetometry surveys faster and cheaper than walking them, but the drone makes a lot of noise from
 its motors, propellers and electronics which leave traces in the magnetometer data. The reason we wanted to 
@@ -145,3 +142,6 @@ survey = load_survey(1, survey_speed=1.5)   # survey 2
 
 Python 3.10 with numpy, scipy, pandas, matplotlib, seaborn, pyproj, statsmodels, ssqueezepy, PyWavelets,
 shapely and jupyter.
+
+The interpolation of the datapoints depends on the unreleased PyMEL code from prof. Philippe De Smedt, as
+such some figures can not be reproduced with your own data.
